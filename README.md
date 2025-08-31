@@ -36,7 +36,7 @@ The application features a beautiful, modern web interface with:
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
+   git clone <https://github.com/haniyya-h/Travel-Itinerary-Planner.git>
    cd travel-itinerary-planner
    ```
 
