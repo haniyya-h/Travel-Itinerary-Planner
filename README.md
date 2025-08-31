@@ -53,14 +53,14 @@ The application features a beautiful, modern web interface with:
 
 4. **Set up environment variables**
    ```bash
-   cp env_template.txt .env
+   copy env_template.txt .env
    ```
    
    Edit `.env` and add your API keys:
    ```
-   GROQ_API_KEY=your_groq_api_key_here
-   GOOGLE_API_KEY=your_google_gemini_api_key_here
-   LANGCHAIN_TRACING_V2=false
+  echo GROQ_API_KEY=your_groq_api_key_here> .env
+  echo GOOGLE_API_KEY=your_google_gemini_api_key_here>> .env
+  echo LANGCHAIN_TRACING_V2=false>> .env
    ```
 
 5. **Run the Streamlit application**
