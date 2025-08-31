@@ -56,26 +56,22 @@ The application features a beautiful, modern web interface with:
    pip install langchain langchain-groq langchain-google-genai langchain-community streamlit python-dotenv
    ```
 
-4. **Set up environment variables**
-   
-   **Windows:**
-   ```cmd
-   echo GROQ_API_KEY=your_groq_api_key_here> .env
-   echo GOOGLE_API_KEY=your_google_gemini_api_key_here>> .env
-   echo LANGCHAIN_TRACING_V2=false>> .env
-   ```
-   
-   **macOS/Linux:**
-   ```bash
-   cp env_template.txt .env
-   ```
-   
-   Then edit `.env` and add your API keys:
-   ```
-   GROQ_API_KEY=your_groq_api_key_here
-   GOOGLE_API_KEY=your_google_gemini_api_key_here
-   LANGCHAIN_TRACING_V2=false
-   ```
+4. Set up environment variables using one of these methods:
+
+### Option A: Using .env file (Recommended for development)
+Create a `.env` file in the project root:
+```bash
+GROQ_API_KEY=your_actual_groq_key_here
+GOOGLE_API_KEY=your_actual_google_key_here
+LANGCHAIN_TRACING_V2=false
+```
+
+### Option B: Setting environment variables in terminal
+```bash
+export GROQ_API_KEY=your_actual_groq_key_here
+export GOOGLE_API_KEY=your_actual_google_key_here
+export LANGCHAIN_TRACING_V2=false
+```
 
 5. **Run the Streamlit application**
    ```bash
