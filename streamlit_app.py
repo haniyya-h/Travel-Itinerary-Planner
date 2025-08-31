@@ -9,6 +9,10 @@ import os
 import sys
 from datetime import datetime
 import json
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Add the current directory to Python path to import main
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
