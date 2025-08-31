@@ -36,7 +36,7 @@ The application features a beautiful, modern web interface with:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/haniyya-h/Travel-Itinerary-Planner.git
+   git clone <your-repo-url>
    cd travel-itinerary-planner
    ```
 
@@ -50,17 +50,31 @@ The application features a beautiful, modern web interface with:
    ```bash
    pip install -r requirements.txt
    ```
+   
+   **Note:** The requirements.txt now contains only essential packages with compatible versions. If you encounter any issues, you can also install packages individually:
+   ```bash
+   pip install langchain langchain-groq langchain-google-genai langchain-community streamlit python-dotenv
+   ```
 
 4. **Set up environment variables**
-   ```bash
-   copy env_template.txt .env
-   ```
    
-   Edit `.env` and add your API keys:
-   ```
+   **Windows:**
+   ```cmd
    echo GROQ_API_KEY=your_groq_api_key_here> .env
    echo GOOGLE_API_KEY=your_google_gemini_api_key_here>> .env
    echo LANGCHAIN_TRACING_V2=false>> .env
+   ```
+   
+   **macOS/Linux:**
+   ```bash
+   cp env_template.txt .env
+   ```
+   
+   Then edit `.env` and add your API keys:
+   ```
+   GROQ_API_KEY=your_groq_api_key_here
+   GOOGLE_API_KEY=your_google_gemini_api_key_here
+   LANGCHAIN_TRACING_V2=false
    ```
 
 5. **Run the Streamlit application**
@@ -228,6 +242,38 @@ Electronics:
 ```bash
 python APITesting.py
 ```
+
+## 🔧 Troubleshooting
+
+### Installation Issues
+
+**Problem:** `pip install -r requirements.txt` fails with dependency conflicts
+**Solution:** Install packages individually:
+```bash
+pip install langchain langchain-groq langchain-google-genai langchain-community streamlit python-dotenv
+```
+
+**Problem:** Port 8501 is already in use
+**Solution:** Stop any existing Streamlit processes or use a different port:
+```bash
+streamlit run streamlit_app.py --server.port 8502
+```
+
+**Problem:** Environment variables not loading
+**Solution:** Ensure your `.env` file is in the project root and contains:
+```
+GROQ_API_KEY=your_actual_groq_key
+GOOGLE_API_KEY=your_actual_google_key
+LANGCHAIN_TRACING_V2=false
+```
+
+### API Key Issues
+
+**Problem:** "GROQ_API_KEY environment variable is required"
+**Solution:** 
+1. Check your `.env` file exists and has the correct API key
+2. Restart the Streamlit app after creating/updating `.env`
+3. Verify your API keys are valid and have sufficient credits
 
 ### Adding New Features
 
