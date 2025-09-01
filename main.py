@@ -114,7 +114,7 @@ class PackingChecklistGenerator:
         # Use ChatGroq for packing checklist generation
         self.llm = ChatGroq(
             groq_api_key=os.getenv("GROQ_API_KEY"),
-            model_name="llama-3.1-70b-versatile",  # Using larger model for more detailed packing lists
+            model_name="llama-3.1-8b-instant",  # Using the same model as outline generator
             temperature=0.4  # Lower temperature for more consistent packing recommendations
         )
         
@@ -313,7 +313,7 @@ def main():
     print("This system uses multiple AI models to create your perfect trip:")
     print("• ChatGroq (Llama 3.1-8B) for day-by-day planning")
     print("• Google Gemini Flash for detailed itineraries") 
-    print("• ChatGroq (Llama 3.1-70B) for packing lists")
+    print("• ChatGroq (Llama 3.1-8B) for packing lists")
     print("=" * 60)
     
     # Initialize the travel planner
