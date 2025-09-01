@@ -90,9 +90,120 @@ if 'trip_history' not in st.session_state:
     st.session_state.trip_history = []
 if 'preferences' not in st.session_state:
     st.session_state.preferences = []
+if 'api_keys_configured' not in st.session_state:
+    st.session_state.api_keys_configured = False
+if 'groq_api_key' not in st.session_state:
+    st.session_state.groq_api_key = ""
+if 'google_api_key' not in st.session_state:
+    st.session_state.google_api_key = ""
+
+def save_api_keys_to_env(groq_key, google_key):
+    """Save API keys to .env file"""
+    try:
+        env_content = f"""# Travel Itinerary Planner API Keys
+GROQ_API_KEY={groq_key}
+GOOGLE_API_KEY={google_key}
+
+# Optional: LangChain Configuration
+LANGCHAIN_TRACING_V2=false
+LANGCHAIN_PROJECT=travel_planner
+
+# Application Configuration
+APP_NAME=Travel Itinerary Planner
+DEBUG=true
+LOG_LEVEL=INFO
+"""
+        with open('.env', 'w') as f:
+            f.write(env_content)
+        return True
+    except Exception as e:
+        st.error(f"Error saving API keys: {e}")
+        return False
+
+def show_api_key_dialog():
+    """Show API key input dialog"""
+    st.markdown("""
+    <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px; margin-bottom: 2rem;">
+        <h1>🏖️ AI Travel Itinerary Planner</h1>
+        <p>Welcome! Let's get you started by setting up your API keys.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("### 🔑 API Keys Setup")
+    st.markdown("""
+    This app uses two AI services to create your travel plans:
+    - **Groq**: For fast day-by-day planning and packing lists
+    - **Google Gemini**: For detailed itineraries with specific recommendations
+    
+    You'll need to get API keys from both services (they're free to use):
+    """)
+    
+    with st.expander("📋 How to get API keys", expanded=False):
+        st.markdown("""
+        **Groq API Key:**
+        1. Visit [Groq Console](https://console.groq.com/)
+        2. Sign up/Login to your account
+        3. Go to API Keys section
+        4. Create a new API key
+        5. Copy the key (starts with `gsk_...`)
+        
+        **Google Gemini API Key:**
+        1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+        2. Sign in with your Google account
+        3. Click "Create API key"
+        4. Copy the generated key
+        """)
+    
+    with st.form("api_keys_form"):
+        st.subheader("Enter Your API Keys")
+        
+        groq_key = st.text_input(
+            "🔑 Groq API Key",
+            type="password",
+            placeholder="gsk_...",
+            help="Your Groq API key (starts with 'gsk_')"
+        )
+        
+        google_key = st.text_input(
+            "🔑 Google Gemini API Key",
+            type="password",
+            placeholder="AI...",
+            help="Your Google Gemini API key"
+        )
+        
+        submitted = st.form_submit_button("🚀 Save Keys & Continue", use_container_width=True)
+        
+        if submitted:
+            if not groq_key or not google_key:
+                st.error("❌ Please enter both API keys")
+            elif not groq_key.startswith("gsk_"):
+                st.error("❌ Groq API key should start with 'gsk_'")
+            else:
+                # Save keys to session state
+                st.session_state.groq_api_key = groq_key
+                st.session_state.google_api_key = google_key
+                
+                # Save to .env file
+                if save_api_keys_to_env(groq_key, google_key):
+                    # Reload environment variables from .env file
+                    load_dotenv(override=True)
+                    
+                    # Set environment variables for current session
+                    os.environ["GROQ_API_KEY"] = groq_key
+                    os.environ["GOOGLE_API_KEY"] = google_key
+                    os.environ["LANGCHAIN_TRACING_V2"] = "false"
+                    
+                    st.session_state.api_keys_configured = True
+                    st.success("✅ API keys saved successfully!")
+                    st.rerun()
+                else:
+                    st.error("❌ Failed to save API keys")
 
 def initialize_travel_planner():
     """Initialize the TravelPlanner instance"""
+    # Always reload environment variables to ensure we have the latest keys
+    load_dotenv(override=True)
+    
     if st.session_state.travel_planner is None:
         try:
             # Check for required environment variables
@@ -123,6 +234,15 @@ def initialize_travel_planner():
 def main():
     """Main Streamlit application"""
     
+    # Check if API keys are configured
+    groq_key = os.getenv("GROQ_API_KEY")
+    google_key = os.getenv("GOOGLE_API_KEY")
+    
+    # If no API keys are found, show the API key dialog
+    if not groq_key or not google_key:
+        show_api_key_dialog()
+        return
+    
     # Header
     st.markdown("""
     <div class="main-header">
@@ -134,6 +254,40 @@ def main():
     # Initialize TravelPlanner
     if not initialize_travel_planner():
         st.stop()
+    
+    # Sidebar for API key management
+    with st.sidebar:
+        st.markdown("### ⚙️ Settings")
+        
+        # Show API key status
+        groq_status = "✅" if os.getenv("GROQ_API_KEY") else "❌"
+        google_status = "✅" if os.getenv("GOOGLE_API_KEY") else "❌"
+        st.markdown(f"**API Keys Status:**")
+        st.markdown(f"- Groq: {groq_status}")
+        st.markdown(f"- Google: {google_status}")
+        
+        if st.button("🔑 Change API Keys"):
+            # Clear the .env file and session state to force re-entry
+            if os.path.exists('.env'):
+                os.remove('.env')
+            # Clear environment variables
+            if 'GROQ_API_KEY' in os.environ:
+                del os.environ['GROQ_API_KEY']
+            if 'GOOGLE_API_KEY' in os.environ:
+                del os.environ['GOOGLE_API_KEY']
+            # Reset TravelPlanner instance
+            st.session_state.travel_planner = None
+            st.session_state.api_keys_configured = False
+            st.rerun()
+        
+        st.markdown("---")
+        st.markdown("### 💡 Tips")
+        st.markdown("""
+        - **Be specific** about your destination
+        - **Add preferences** to personalize your plans
+        - **Check the weather** for your travel dates
+        - **Book accommodations** in advance
+        """)
     
     # Create tabs
     tab1, tab2, tab3 = st.tabs(["🗺️ Plan Trip", "❤️ Preferences", "📚 History"])
@@ -207,20 +361,13 @@ def main():
                                 st.error(f"❌ Error generating travel plan: {e}")
         
         with col2:
-            # Sidebar information
-            st.markdown("### 💡 Tips")
-            st.markdown("""
-            - **Be specific** about your destination
-            - **Add preferences** to personalize your plans
-            - **Check the weather** for your travel dates
-            - **Book accommodations** in advance
-            """)
-            
             # Current preferences display
             if st.session_state.preferences:
                 st.markdown("### ❤️ Your Preferences")
                 for i, pref in enumerate(st.session_state.preferences):
                     st.markdown(f"• {pref}")
+            else:
+                st.info("💡 Add preferences in the Preferences tab to personalize your travel plans!")
     
     with tab2:
         st.header("❤️ Your Travel Preferences")
