@@ -2,12 +2,16 @@
 # A multi-LLM system for comprehensive travel planning
 
 import os
+import json
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain_groq import ChatGroq
 from langchain_google_genai import GoogleGenerativeAI
+
+# Load environment variables
+load_dotenv()
 
 
 class OutlineGenerator:
@@ -110,8 +114,8 @@ class PackingChecklistGenerator:
         # Use ChatGroq for packing checklist generation
         self.llm = ChatGroq(
             groq_api_key=os.getenv("GROQ_API_KEY"),
-            model_name="llama-3.1-8b-instant",
-            temperature=0.5
+            model_name="llama-3.1-70b-versatile",  # Using larger model for more detailed packing lists
+            temperature=0.4  # Lower temperature for more consistent packing recommendations
         )
         
         self.prompt_template = PromptTemplate(
@@ -127,7 +131,7 @@ class PackingChecklistGenerator:
             Analyze the activities mentioned in the itinerary and create a packing checklist organized by categories:
 
             CLOTHING:
-            - Weather-appropriate clothing
+            - Weather-appropriate clothing for {destination}
             - Activity-specific clothing (hiking, swimming, formal dining, etc.)
 
             ELECTRONICS:
@@ -146,6 +150,7 @@ class PackingChecklistGenerator:
             - Other useful items for the trip
 
             Be specific and practical. Consider the season, climate, and specific activities planned.
+            Include quantity suggestions where helpful (e.g., "3-4 t-shirts").
 
             Packing Checklist:
             """
@@ -164,38 +169,59 @@ class PackingChecklistGenerator:
 class TravelPlanner:
     """Main controller class that orchestrates the three LLM classes and manages memory"""
     
-    def __init__(self):
+    def __init__(self, preferences_file="user_preferences.json"):
+        self.preferences_file = preferences_file
         self.memory = ConversationBufferMemory(
             memory_key="chat_history",
             return_messages=True
         )
         
+        # Load persistent preferences
+        self.persistent_preferences = self.load_preferences()
+        
         self.outline_generator = OutlineGenerator()
         self.detailed_generator = DetailedItineraryGenerator()
         self.packing_generator = PackingChecklistGenerator()
     
+    def load_preferences(self):
+        """Load preferences from JSON file"""
+        try:
+            if os.path.exists(self.preferences_file):
+                with open(self.preferences_file, 'r') as f:
+                    return json.load(f)
+            return []
+        except Exception as e:
+            print(f"Warning: Could not load preferences file: {e}")
+            return []
+    
+    def save_preferences(self):
+        """Save preferences to JSON file"""
+        try:
+            with open(self.preferences_file, 'w') as f:
+                json.dump(self.persistent_preferences, f, indent=2)
+        except Exception as e:
+            print(f"Warning: Could not save preferences: {e}")
+    
     def extract_preferences_from_memory(self):
-        """Extract user preferences from conversation history"""
-        chat_history = self.memory.chat_memory.messages
-        preferences = []
+        """Extract user preferences from conversation history and persistent storage"""
+        # Combine persistent preferences with current session preferences
+        all_preferences = self.persistent_preferences.copy()
         
+        # Add preferences from current session memory
+        chat_history = self.memory.chat_memory.messages
         for message in chat_history:
             content = message.content
-            # Look for preference indicators in both input and output
             if any(keyword in content.lower() for keyword in ['prefer', 'like', 'love', 'enjoy', 'hate', 'dislike', 'preference']):
-                # Extract the actual preference text
                 if "User preference:" in content:
                     preference_text = content.split("User preference:")[-1].strip()
-                    if preference_text:
-                        preferences.append(preference_text)
+                    if preference_text and preference_text not in all_preferences:
+                        all_preferences.append(preference_text)
                 elif "Preference noted:" in content:
                     preference_text = content.split("Preference noted:")[-1].strip()
-                    if preference_text:
-                        preferences.append(preference_text)
-                else:
-                    preferences.append(content)
+                    if preference_text and preference_text not in all_preferences:
+                        all_preferences.append(preference_text)
         
-        return " | ".join(preferences) if preferences else "No specific preferences stored yet."
+        return " | ".join(all_preferences) if all_preferences else "No specific preferences stored yet."
     
     def plan_trip(self, destination, duration):
         """Main method to orchestrate the complete travel planning pipeline"""
@@ -207,51 +233,77 @@ class TravelPlanner:
         stored_preferences = self.extract_preferences_from_memory()
         chat_history = str(self.memory.chat_memory.messages)
         
-        # Step 1: Generate outline using ChatGroq
-        print("\n📋 Step 1: Generating day-by-day outline...")
-        outline = self.outline_generator.generate_outline(
-            destination, duration, stored_preferences, chat_history
-        )
-        print("✅ Outline generated!")
-        
-        # Step 2: Generate detailed itinerary using Gemini
-        print("\n📅 Step 2: Creating detailed itinerary...")
-        detailed_itinerary = self.detailed_generator.generate_detailed_itinerary(
-            outline, destination, stored_preferences, chat_history
-        )
-        print("✅ Detailed itinerary created!")
-        
-        # Step 3: Generate packing checklist using ChatAnthropic
-        print("\n🎒 Step 3: Generating packing checklist...")
-        packing_checklist = self.packing_generator.generate_packing_checklist(
-            detailed_itinerary, destination, chat_history
-        )
-        print("✅ Packing checklist ready!")
-        
-        # Store this conversation in memory
-        self.memory.save_context(
-            {"input": f"Plan trip to {destination} for {duration} days"},
-            {"output": f"Generated complete travel plan including outline, detailed itinerary, and packing list"}
-        )
-        
-        return {
-            "outline": outline,
-            "detailed_itinerary": detailed_itinerary,
-            "packing_checklist": packing_checklist
-        }
+        try:
+            # Step 1: Generate outline using ChatGroq
+            print("\n📋 Step 1: Generating day-by-day outline...")
+            outline = self.outline_generator.generate_outline(
+                destination, duration, stored_preferences, chat_history
+            )
+            print("✅ Outline generated!")
+            
+            # Step 2: Generate detailed itinerary using Gemini
+            print("\n📅 Step 2: Creating detailed itinerary...")
+            detailed_itinerary = self.detailed_generator.generate_detailed_itinerary(
+                outline, destination, stored_preferences, chat_history
+            )
+            print("✅ Detailed itinerary created!")
+            
+            # Step 3: Generate packing checklist using ChatGroq
+            print("\n🎒 Step 3: Generating packing checklist...")
+            packing_checklist = self.packing_generator.generate_packing_checklist(
+                detailed_itinerary, destination, chat_history
+            )
+            print("✅ Packing checklist ready!")
+            
+            # Store this conversation in memory
+            self.memory.save_context(
+                {"input": f"Plan trip to {destination} for {duration} days"},
+                {"output": f"Generated complete travel plan including outline, detailed itinerary, and packing list"}
+            )
+            
+            return {
+                "outline": outline,
+                "detailed_itinerary": detailed_itinerary,
+                "packing_checklist": packing_checklist
+            }
+            
+        except Exception as e:
+            print(f"❌ Error in travel planning pipeline: {e}")
+            raise
     
     def add_preference(self, preference):
-        """Allow users to add preferences that will be stored in memory"""
+        """Allow users to add preferences that will be stored persistently"""
+        if preference not in self.persistent_preferences:
+            self.persistent_preferences.append(preference)
+            self.save_preferences()
+        
+        # Also add to current session memory
         self.memory.save_context(
             {"input": f"User preference: {preference}"},
             {"output": f"Preference noted: {preference}"}
         )
         print(f"✅ Preference saved: {preference}")
     
+    def remove_preference(self, preference):
+        """Remove a preference from persistent storage"""
+        if preference in self.persistent_preferences:
+            self.persistent_preferences.remove(preference)
+            self.save_preferences()
+            return True
+        return False
+    
     def show_stored_preferences(self):
         """Display currently stored preferences"""
-        preferences = self.extract_preferences_from_memory()
-        print(f"\n💡 Stored Preferences: {preferences}")
+        if self.persistent_preferences:
+            print(f"\n💡 Stored Preferences ({len(self.persistent_preferences)}):")
+            for i, pref in enumerate(self.persistent_preferences, 1):
+                print(f"   {i}. {pref}")
+        else:
+            print(f"\n💡 No preferences stored yet.")
+    
+    def get_all_preferences(self):
+        """Get all preferences as a list"""
+        return self.persistent_preferences.copy()
 
 
 def main():
@@ -259,15 +311,20 @@ def main():
     
     print("🏖️ Welcome to the AI Travel Itinerary Planner! 🏖️")
     print("This system uses multiple AI models to create your perfect trip:")
-    print("• ChatGroq (Llama 3.1) for day-by-day planning")
-    print("• Google Gemini for detailed itineraries") 
-    print("• ChatGroq (Llama 3.1) for packing lists")
+    print("• ChatGroq (Llama 3.1-8B) for day-by-day planning")
+    print("• Google Gemini Flash for detailed itineraries") 
+    print("• ChatGroq (Llama 3.1-70B) for packing lists")
     print("=" * 60)
     
     # Initialize the travel planner
     try:
         planner = TravelPlanner()
         print("✅ AI models initialized successfully!")
+        
+        # Show existing preferences if any
+        if planner.get_all_preferences():
+            planner.show_stored_preferences()
+            
     except Exception as e:
         print(f"❌ Error initializing AI models. Please check your API keys in .env file.")
         print(f"Error details: {e}")
@@ -278,13 +335,18 @@ def main():
         print("1. Plan a new trip")
         print("2. Add a travel preference")
         print("3. View stored preferences")
-        print("4. Exit")
+        print("4. Remove a preference")
+        print("5. Exit")
         
-        choice = input("\nEnter your choice (1-4): ").strip()
+        choice = input("\nEnter your choice (1-5): ").strip()
         
         if choice == "1":
             # Plan a new trip
             destination = input("\n📍 Where would you like to travel? ").strip()
+            if not destination:
+                print("❌ Please enter a valid destination.")
+                continue
+                
             while True:
                 try:
                     duration = int(input("📅 How many days is your trip? "))
@@ -317,6 +379,12 @@ def main():
                 
                 print("\n🎉 Your complete travel plan is ready!")
                 
+                # Ask if user wants to save this as a preference
+                if input("\n💾 Would you like to add any preferences based on this trip? (y/n): ").lower().startswith('y'):
+                    new_pref = input("Enter your preference: ").strip()
+                    if new_pref:
+                        planner.add_preference(new_pref)
+                
             except Exception as e:
                 print(f"❌ Error generating travel plan: {e}")
         
@@ -326,19 +394,38 @@ def main():
             if preference:
                 planner.add_preference(preference)
             else:
-                print("Please enter a valid preference.")
+                print("❌ Please enter a valid preference.")
         
         elif choice == "3":
             # Show stored preferences
             planner.show_stored_preferences()
         
         elif choice == "4":
+            # Remove a preference
+            planner.show_stored_preferences()
+            if planner.get_all_preferences():
+                try:
+                    pref_num = int(input("\nEnter the number of the preference to remove: "))
+                    if 1 <= pref_num <= len(planner.get_all_preferences()):
+                        pref_to_remove = planner.get_all_preferences()[pref_num - 1]
+                        if planner.remove_preference(pref_to_remove):
+                            print(f"✅ Removed preference: {pref_to_remove}")
+                        else:
+                            print("❌ Error removing preference.")
+                    else:
+                        print("❌ Invalid preference number.")
+                except ValueError:
+                    print("❌ Please enter a valid number.")
+        
+        elif choice == "5":
             print("\n✈️ Thank you for using the AI Travel Itinerary Planner! Safe travels! 🌍")
             break
         
         else:
-            print("❌ Invalid choice. Please enter 1, 2, 3, or 4.")
+            print("❌ Invalid choice. Please enter 1, 2, 3, 4, or 5.")
 
 
 if __name__ == "__main__":
+    # Load environment variables
+    load_dotenv()
     main()
