@@ -37,7 +37,7 @@ The application features a beautiful, modern web interface with:
 1. **Clone the repository**
    ```bash
    git clone https://github.com/haniyya-h/Travel-Itinerary-Planner.git
-   cd ai-travel-itinerary-planner
+   cd Travel-Itinerary-Planner
    ```
 
 2. **Create a virtual environment**
