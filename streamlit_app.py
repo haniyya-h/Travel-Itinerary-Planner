@@ -97,6 +97,44 @@ if 'groq_api_key' not in st.session_state:
 if 'google_api_key' not in st.session_state:
     st.session_state.google_api_key = ""
 
+def validate_api_keys(groq_key=None, google_key=None):
+    """Validate API keys by making test requests"""
+    validation_results = {"groq": False, "google": False}
+    
+    # Test Groq API key
+    if groq_key or os.getenv("GROQ_API_KEY"):
+        try:
+            from langchain_groq import ChatGroq
+            test_llm = ChatGroq(
+                groq_api_key=groq_key or os.getenv("GROQ_API_KEY"),
+                model_name="llama-3.1-8b-instant",
+                temperature=0.1
+            )
+            # Make a simple test request
+            response = test_llm.invoke("Hello")
+            if response and hasattr(response, 'content'):
+                validation_results["groq"] = True
+        except Exception as e:
+            validation_results["groq"] = False
+    
+    # Test Google API key
+    if google_key or os.getenv("GOOGLE_API_KEY"):
+        try:
+            from langchain_google_genai import GoogleGenerativeAI
+            test_llm = GoogleGenerativeAI(
+                google_api_key=google_key or os.getenv("GOOGLE_API_KEY"),
+                model="gemini-1.5-flash",
+                temperature=0.1
+            )
+            # Make a simple test request
+            response = test_llm.invoke("Hello")
+            if response and hasattr(response, 'content'):
+                validation_results["google"] = True
+        except Exception as e:
+            validation_results["google"] = False
+    
+    return validation_results
+
 def save_api_keys_to_env(groq_key, google_key):
     """Save API keys to .env file"""
     try:
@@ -179,25 +217,45 @@ def show_api_key_dialog():
             elif not groq_key.startswith("gsk_"):
                 st.error("❌ Groq API key should start with 'gsk_'")
             else:
-                # Save keys to session state
-                st.session_state.groq_api_key = groq_key
-                st.session_state.google_api_key = google_key
+                # Validate API keys before saving
+                with st.spinner("🔍 Validating API keys..."):
+                    validation_results = validate_api_keys(groq_key, google_key)
                 
-                # Save to .env file
-                if save_api_keys_to_env(groq_key, google_key):
-                    # Reload environment variables from .env file
-                    load_dotenv(override=True)
+                if validation_results["groq"] and validation_results["google"]:
+                    # Save keys to session state
+                    st.session_state.groq_api_key = groq_key
+                    st.session_state.google_api_key = google_key
                     
-                    # Set environment variables for current session
-                    os.environ["GROQ_API_KEY"] = groq_key
-                    os.environ["GOOGLE_API_KEY"] = google_key
-                    os.environ["LANGCHAIN_TRACING_V2"] = "false"
-                    
-                    st.session_state.api_keys_configured = True
-                    st.success("✅ API keys saved successfully!")
-                    st.rerun()
+                    # Save to .env file
+                    if save_api_keys_to_env(groq_key, google_key):
+                        # Reload environment variables from .env file
+                        load_dotenv(override=True)
+                        
+                        # Set environment variables for current session
+                        os.environ["GROQ_API_KEY"] = groq_key
+                        os.environ["GOOGLE_API_KEY"] = google_key
+                        os.environ["LANGCHAIN_TRACING_V2"] = "false"
+                        
+                        st.session_state.api_keys_configured = True
+                        # Clear validation cache to force re-validation with new keys
+                        if 'api_validation_cache' in st.session_state:
+                            del st.session_state.api_validation_cache
+                        st.success("✅ API keys validated and saved successfully!")
+                        st.rerun()
+                    else:
+                        st.error("❌ Failed to save API keys")
                 else:
-                    st.error("❌ Failed to save API keys")
+                    # Show specific validation errors
+                    error_messages = []
+                    if not validation_results["groq"]:
+                        error_messages.append("❌ Groq API key is invalid")
+                    if not validation_results["google"]:
+                        error_messages.append("❌ Google API key is invalid")
+                    
+                    for error in error_messages:
+                        st.error(error)
+                    
+                    st.info("💡 Please check your API keys and try again. Make sure they are valid and have sufficient credits.")
 
 def initialize_travel_planner():
     """Initialize the TravelPlanner instance"""
@@ -259,12 +317,33 @@ def main():
     with st.sidebar:
         st.markdown("### ⚙️ Settings")
         
-        # Show API key status
-        groq_status = "✅" if os.getenv("GROQ_API_KEY") else "❌"
-        google_status = "✅" if os.getenv("GOOGLE_API_KEY") else "❌"
+        # Show API key status with validation
         st.markdown(f"**API Keys Status:**")
+        
+        # Check if we have API keys
+        groq_key = os.getenv("GROQ_API_KEY")
+        google_key = os.getenv("GOOGLE_API_KEY")
+        
+        if groq_key and google_key:
+            # Validate API keys (cache the result for performance)
+            if 'api_validation_cache' not in st.session_state:
+                with st.spinner("🔍 Checking API keys..."):
+                    st.session_state.api_validation_cache = validate_api_keys()
+            
+            groq_status = "✅ Valid" if st.session_state.api_validation_cache["groq"] else "❌ Invalid"
+            google_status = "✅ Valid" if st.session_state.api_validation_cache["google"] else "❌ Invalid"
+        else:
+            groq_status = "❌ Not set"
+            google_status = "❌ Not set"
+        
         st.markdown(f"- Groq: {groq_status}")
         st.markdown(f"- Google: {google_status}")
+        
+        # Add refresh button for validation
+        if st.button("🔄 Refresh Status", help="Re-validate API keys"):
+            with st.spinner("🔍 Re-validating API keys..."):
+                st.session_state.api_validation_cache = validate_api_keys()
+            st.rerun()
         
         if st.button("🔑 Change API Keys"):
             # Clear the .env file and session state to force re-entry
@@ -275,9 +354,11 @@ def main():
                 del os.environ['GROQ_API_KEY']
             if 'GOOGLE_API_KEY' in os.environ:
                 del os.environ['GOOGLE_API_KEY']
-            # Reset TravelPlanner instance
+            # Reset TravelPlanner instance and validation cache
             st.session_state.travel_planner = None
             st.session_state.api_keys_configured = False
+            if 'api_validation_cache' in st.session_state:
+                del st.session_state.api_validation_cache
             st.rerun()
         
         st.markdown("---")
