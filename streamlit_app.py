@@ -128,7 +128,8 @@ def validate_api_keys(groq_key=None, google_key=None):
             )
             # Make a simple test request
             response = test_llm.invoke("Hello")
-            if response and hasattr(response, 'content'):
+            # Check for valid response - GoogleGenerativeAI returns string directly
+            if response and str(response).strip():
                 validation_results["google"] = True
         except Exception as e:
             validation_results["google"] = False
