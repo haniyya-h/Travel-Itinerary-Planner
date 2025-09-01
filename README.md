@@ -36,8 +36,8 @@ The application features a beautiful, modern web interface with:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/haniyya-h/Travel-Itinerary-Planner.git
-   cd travel-itinerary-planner
+   git clone <your-repo-url>
+   cd ai-travel-itinerary-planner
    ```
 
 2. **Create a virtual environment**
@@ -50,42 +50,65 @@ The application features a beautiful, modern web interface with:
    ```bash
    pip install -r requirements.txt
    ```
-   
-   **Note:** The requirements.txt now contains only essential packages with compatible versions. If you encounter any issues, you can also install packages individually:
+    **Note:** The requirements.txt now contains only essential packages with compatible versions. If you encounter any issues, you can also install packages individually:
    ```bash
    pip install langchain langchain-groq langchain-google-genai langchain-community streamlit python-dotenv
    ```
 
-4. Set up environment variables using one of these methods:
+4. **Get your API keys** 🔑
 
-### Option A: Using .env file (Recommended for development)
-Create a `.env` file in the project root:
-```bash
-GROQ_API_KEY=your_actual_groq_key_here
-GOOGLE_API_KEY=your_actual_google_key_here
-LANGCHAIN_TRACING_V2=false
-```
+   **Step 1: Get Groq API Key**
+   - Visit [Groq Console](https://console.groq.com/)
+   - Sign up/Login to your account
+   - Go to API Keys section
+   - Create a new API key
+   - Copy the key (it looks like: `gsk_...`)
 
-### Option B: Setting environment variables in terminal
-```bash
-export GROQ_API_KEY=your_actual_groq_key_here
-export GOOGLE_API_KEY=your_actual_google_key_here
-export LANGCHAIN_TRACING_V2=false
-```
+   **Step 2: Get Google Gemini API Key**
+   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Sign in with your Google account
+   - Click "Create API key"
+   - Copy the generated key
 
-5. **Run the Streamlit application**
+5. **Set up environment variables**
+
+   Create a `.env` file in the project root:
+
+   **Windows:**
+   ```cmd
+   echo GROQ_API_KEY=your_actual_groq_key_here> .env
+   echo GOOGLE_API_KEY=your_actual_google_key_here>> .env
+   echo LANGCHAIN_TRACING_V2=false>> .env
+   ```
+
+   **macOS/Linux:**
+   ```bash
+   cp env_template.txt .env
+   ```
+
+   Then edit `.env` with your real keys:
+   ```
+   GROQ_API_KEY=gsk_your_actual_groq_key_here
+   GOOGLE_API_KEY=your_actual_google_key_here
+   LANGCHAIN_TRACING_V2=false
+   ```
+
+   ⚠️ **Important:** Never commit your `.env` file to GitHub! It's already in `.gitignore`.
+
+6. **Run the Streamlit application**
    ```bash
    python run_streamlit.py
    ```
-   
+
    Or directly:
    ```bash
    streamlit run streamlit_app.py
    ```
 
-6. **Open your browser**
+7. **Open your browser**
    - The app will automatically open at `http://localhost:8501`
    - If not, manually navigate to the URL
+   - Start planning your dream trip! ✈️
 
 ## 🎯 Usage
 
