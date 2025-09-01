@@ -2,6 +2,14 @@
 
 A beautiful AI-powered travel planning application with a modern Streamlit web interface. Create personalized itineraries using multiple Large Language Models (LLMs) with an intuitive, user-friendly design.
 
+## 🌐 Try It Live!
+
+**[🚀 Launch the App Online](https://ai-travel-itinerary-planner.streamlit.app/)** - No installation required!
+
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://ai-travel-itinerary-planner.streamlit.app/)
+
+*Just enter your API keys and start planning your dream trip in seconds!*
+
 ## ✨ Features
 
 - **🌐 Beautiful Web Interface**: Modern Streamlit UI with tabs, forms, and responsive design
@@ -14,6 +22,7 @@ A beautiful AI-powered travel planning application with a modern Streamlit web i
 - **🔑 Built-in API Key Setup**: User-friendly API key input dialog - no manual .env file creation needed
 - **⚙️ API Key Management**: Change API keys anytime through the web interface
 - **🚀 Zero-Config Setup**: Just run the app and enter your API keys when prompted
+- **🌐 Live Demo Available**: Try the app online without any installation at [ai-travel-itinerary-planner.streamlit.app](https://ai-travel-itinerary-planner.streamlit.app/)
 
 ## 🎨 Web Interface
 
@@ -29,14 +38,34 @@ The application features a beautiful, modern web interface with:
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Option 1: Use the Live Demo (Recommended for Quick Testing)
 
+**🌐 Try it online right now!**
+
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://ai-travel-itinerary-planner.streamlit.app/)
+
+**Direct Link:** https://ai-travel-itinerary-planner.streamlit.app/
+
+**What you need:**
+- Just your API keys (Groq + Google Gemini)
+- No installation required!
+
+**Steps:**
+1. Click the link above
+2. Enter your API keys when prompted
+3. Start planning your trips immediately!
+
+---
+
+### Option 2: Run Locally (For Development/Customization)
+
+**Prerequisites:**
 - Python 3.8 or higher
 - API keys for:
   - [Groq](https://console.groq.com/) (for ChatGroq models)
   - [Google AI Studio](https://makersuite.google.com/app/apikey) (for Gemini)
 
-### Installation
+**Installation:**
 
 1. **Clone the repository**
    ```bash
@@ -73,7 +102,22 @@ The application features a beautiful, modern web interface with:
 
 ## 🎯 Usage
 
-### Web Interface
+### Live Demo (Recommended)
+
+**🌐 Try the app online:** https://ai-travel-itinerary-planner.streamlit.app/
+
+**Perfect for:**
+- Quick testing and evaluation
+- Users who don't want to install anything
+- Sharing with others
+- Mobile and tablet access
+
+**How to use:**
+1. Visit the link above
+2. Enter your API keys in sidebar
+3. Start planning trips immediately!
+
+### Local Installation
 
 1. **Start the application**
    ```bash
@@ -310,6 +354,37 @@ streamlit run streamlit_app.py --server.port 8502
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 🌐 Deployment
+
+### Live Demo
+
+The app is deployed on Streamlit Cloud and available at:
+**https://ai-travel-itinerary-planner.streamlit.app/**
+
+**Features of the live demo:**
+- ✅ Always up-to-date with the latest version
+- ✅ No installation required
+- ✅ Works on any device with a web browser
+- ✅ Same functionality as local installation
+- ✅ API keys are stored in your browser session
+
+**Note:** API keys are not permanently stored on the server - they're only kept in your browser session for security.
+
+### Self-Hosting
+
+If you want to deploy your own instance:
+
+1. **Fork this repository**
+2. **Deploy to Streamlit Cloud:**
+   - Go to [share.streamlit.io](https://share.streamlit.io)
+   - Connect your GitHub account
+   - Select this repository
+   - Deploy!
+
+3. **Deploy to other platforms:**
+   - Heroku, Railway, Render, etc.
+   - Just make sure to install the requirements and run `streamlit run streamlit_app.py`
+
 ## 🆕 Recent Updates
 
 ### Version 2.0 - Enhanced User Experience
@@ -319,12 +394,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **One-Click Key Updates**: Change API keys anytime through the interface
 - ✅ **Model Updates**: Updated to use supported Groq models
 - ✅ **Zero-Config Setup**: Just run the app and enter your keys when prompted
+- ✅ **Live Demo**: Deployed app available online for instant access
 
 ### What's New
 - 🔑 **API Key Dialog**: First-time users see a guided setup process
 - ⚙️ **Settings Sidebar**: Manage API keys and view their status
 - 🎨 **Enhanced UI**: Improved styling and user experience
 - 🚀 **Simplified Installation**: Reduced setup steps from 7 to 4
+- 🌐 **Online Access**: Try the app without any installation
 
 ## 🙏 Acknowledgments
 
