@@ -5,21 +5,25 @@ A beautiful AI-powered travel planning application with a modern Streamlit web i
 ## ✨ Features
 
 - **🌐 Beautiful Web Interface**: Modern Streamlit UI with tabs, forms, and responsive design
-- **🤖 Multi-LLM Integration**: Uses ChatGroq for day-by-day outlines, Google Gemini for detailed itineraries, and Groq for packing checklists
+- **🤖 Multi-LLM Integration**: Uses ChatGroq for day-by-day outlines, Google Gemini for detailed itineraries, and ChatGroq for packing checklists
 - **💾 Smart Memory System**: Remembers your preferences across sessions using ConversationBufferMemory
 - **🎯 Personalized Planning**: Tailors recommendations based on your stored preferences
 - **📋 Comprehensive Output**: Generates day-by-day outlines, detailed itineraries, and packing checklists
 - **📚 Trip History**: View and manage your past travel plans
 - **❤️ Preference Management**: Add, view, and delete your travel preferences
-- **🚀 Easy Setup**: Simple configuration with environment variables
+- **🔑 Built-in API Key Setup**: User-friendly API key input dialog - no manual .env file creation needed
+- **⚙️ API Key Management**: Change API keys anytime through the web interface
+- **🚀 Zero-Config Setup**: Just run the app and enter your API keys when prompted
 
 ## 🎨 Web Interface
 
 The application features a beautiful, modern web interface with:
 
+- **🔑 API Key Setup Dialog**: First-time setup with guided instructions and validation
 - **🗺️ Plan Trip Tab**: Interactive form for destination and duration selection
 - **❤️ Preferences Tab**: Manage your travel preferences and likes/dislikes
 - **📚 History Tab**: View and manage your past travel plans
+- **⚙️ Settings Sidebar**: API key management and status indicators
 - **💡 Tips Sidebar**: Helpful travel planning advice
 - **🎨 Custom Styling**: Professional gradient design and responsive layout
 
@@ -29,7 +33,7 @@ The application features a beautiful, modern web interface with:
 
 - Python 3.8 or higher
 - API keys for:
-  - [Groq](https://console.groq.com/) (for ChatGroq and Groq models)
+  - [Groq](https://console.groq.com/) (for ChatGroq models)
   - [Google AI Studio](https://makersuite.google.com/app/apikey) (for Gemini)
 
 ### Installation
@@ -50,65 +54,22 @@ The application features a beautiful, modern web interface with:
    ```bash
    pip install -r requirements.txt
    ```
-    **Note:** The requirements.txt now contains only essential packages with compatible versions. If you encounter any issues, you can also install packages individually:
-   ```bash
-   pip install langchain langchain-groq langchain-google-genai langchain-community streamlit python-dotenv
-   ```
 
-4. **Get your API keys** 🔑
-
-   **Step 1: Get Groq API Key**
-   - Visit [Groq Console](https://console.groq.com/)
-   - Sign up/Login to your account
-   - Go to API Keys section
-   - Create a new API key
-   - Copy the key (it looks like: `gsk_...`)
-
-   **Step 2: Get Google Gemini API Key**
-   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-   - Sign in with your Google account
-   - Click "Create API key"
-   - Copy the generated key
-
-5. **Set up environment variables**
-
-   Create a `.env` file in the project root:
-
-   **Windows:**
-   ```cmd
-   echo GROQ_API_KEY=your_actual_groq_key_here> .env
-   echo GOOGLE_API_KEY=your_actual_google_key_here>> .env
-   echo LANGCHAIN_TRACING_V2=false>> .env
-   ```
-
-   **macOS/Linux:**
-   ```bash
-   cp env_template.txt .env
-   ```
-
-   Then edit `.env` with your real keys:
-   ```
-   GROQ_API_KEY=gsk_your_actual_groq_key_here
-   GOOGLE_API_KEY=your_actual_google_key_here
-   LANGCHAIN_TRACING_V2=false
-   ```
-
-   ⚠️ **Important:** Never commit your `.env` file to GitHub! It's already in `.gitignore`.
-
-6. **Run the Streamlit application**
-   ```bash
-   python run_streamlit.py
-   ```
-
-   Or directly:
+4. **Run the Streamlit application**
    ```bash
    streamlit run streamlit_app.py
    ```
 
-7. **Open your browser**
-   - The app will automatically open at `http://localhost:8501`
-   - If not, manually navigate to the URL
-   - Start planning your dream trip! ✈️
+5. **Set up API keys** 🔑
+   - The app will open in your browser
+   - You'll see a beautiful API key setup dialog
+   - Follow the guided instructions to get your API keys
+   - Enter your keys and click "Save Keys & Continue"
+
+6. **Start planning!** ✈️
+   - The app will automatically save your API keys
+   - You can now plan trips, manage preferences, and view history
+   - Change API keys anytime using the sidebar settings
 
 ## 🎯 Usage
 
@@ -116,13 +77,18 @@ The application features a beautiful, modern web interface with:
 
 1. **Start the application**
    ```bash
-   python run_streamlit.py
+   streamlit run streamlit_app.py
    ```
 
-2. **Use the web interface**:
+2. **First-time setup**:
+   - Enter your Groq and Google Gemini API keys when prompted
+   - The app will automatically save them for future use
+
+3. **Use the web interface**:
    - **Plan Trip**: Enter destination and duration, click "Generate Travel Plan"
    - **Preferences**: Add your travel preferences to personalize future plans
    - **History**: View and manage your past travel plans
+   - **Settings**: Change API keys or view their status in the sidebar
 
 ### Command Line Interface (Alternative)
 
@@ -141,23 +107,30 @@ Use the **Preferences** tab to add travel preferences that will be remembered:
 - **Avoidances**: "I don't like tourist attractions"
 - **Food**: "I prefer local cuisine over international chains"
 
+### API Key Management
+
+- **First-time setup**: The app will prompt you to enter API keys when you first run it
+- **Change keys**: Use the "Change API Keys" button in the sidebar to update your keys
+- **Status indicators**: Check the sidebar to see if your API keys are properly loaded
+- **Automatic saving**: Keys are automatically saved to a `.env` file for future use
+
 ## 🏗️ Architecture
 
 ### Core Components
 
-- **`streamlit_app.py`**: Beautiful web interface using Streamlit
+- **`streamlit_app.py`**: Beautiful web interface using Streamlit with built-in API key management
 - **`main.py`**: Core application logic and LLM integrations
 - **`run_streamlit.py`**: Simple script to start the Streamlit app
 - **`OutlineGenerator`**: Uses ChatGroq to create day-by-day travel outlines
 - **`DetailedItineraryGenerator`**: Uses Google Gemini to generate detailed itineraries
-- **`PackingChecklistGenerator`**: Uses Groq to create personalized packing lists
+- **`PackingChecklistGenerator`**: Uses ChatGroq to create personalized packing lists
 - **`TravelPlanner`**: Main controller that orchestrates the planning process
 
 ### LLM Models Used
 
 - **ChatGroq**: `llama-3.1-8b-instant` for fast outline generation
 - **Google Gemini**: `gemini-1.5-flash` for detailed itinerary creation
-- **Groq**: `llama-3.1-8b-instant` for packing checklist generation
+- **ChatGroq**: `llama-3.1-8b-instant` for packing checklist generation
 
 ## 📁 Project Structure
 
@@ -177,23 +150,33 @@ travel-itinerary-planner/
 
 ### Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `GROQ_API_KEY` | Your Groq API key | Yes |
-| `GOOGLE_API_KEY` | Your Google Gemini API key | Yes |
-| `LANGCHAIN_TRACING_V2` | Enable/disable LangSmith tracing | No (default: false) |
+The app automatically manages these environment variables for you:
+
+| Variable | Description | Required | Auto-Managed |
+|----------|-------------|----------|--------------|
+| `GROQ_API_KEY` | Your Groq API key | Yes | ✅ |
+| `GOOGLE_API_KEY` | Your Google Gemini API key | Yes | ✅ |
+| `LANGCHAIN_TRACING_V2` | Enable/disable LangSmith tracing | No | ✅ |
 
 ### API Key Setup
+
+**🎉 No manual setup required!** The app handles everything for you:
 
 1. **Groq API Key**:
    - Visit [Groq Console](https://console.groq.com/)
    - Sign up/Login and create an API key
-   - Copy the key to your `.env` file
+   - Enter it in the app's API key dialog
 
 2. **Google Gemini API Key**:
    - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
    - Create a new API key
-   - Copy the key to your `.env` file
+   - Enter it in the app's API key dialog
+
+The app will automatically:
+- ✅ Validate your API keys
+- ✅ Save them to a `.env` file
+- ✅ Load them for future sessions
+- ✅ Show their status in the sidebar
 
 ## 🎨 Example Output
 
@@ -278,21 +261,25 @@ pip install langchain langchain-groq langchain-google-genai langchain-community 
 streamlit run streamlit_app.py --server.port 8502
 ```
 
-**Problem:** Environment variables not loading
-**Solution:** Ensure your `.env` file is in the project root and contains:
-```
-GROQ_API_KEY=your_actual_groq_key
-GOOGLE_API_KEY=your_actual_google_key
-LANGCHAIN_TRACING_V2=false
-```
-
 ### API Key Issues
 
-**Problem:** "GROQ_API_KEY environment variable is required"
+**Problem:** "Invalid API Key" error
 **Solution:** 
-1. Check your `.env` file exists and has the correct API key
-2. Restart the Streamlit app after creating/updating `.env`
-3. Verify your API keys are valid and have sufficient credits
+1. Use the "Change API Keys" button in the sidebar to re-enter your keys
+2. Verify your API keys are valid and have sufficient credits
+3. Check the sidebar for API key status indicators
+
+**Problem:** API key dialog not appearing
+**Solution:**
+1. Delete the `.env` file if it exists
+2. Restart the Streamlit app
+3. The API key dialog should appear on first launch
+
+**Problem:** API keys not saving
+**Solution:**
+1. Make sure you have write permissions in the project directory
+2. Check that the `.env` file is not read-only
+3. Try using the "Change API Keys" button to re-save them
 
 ### Adding New Features
 
@@ -300,6 +287,7 @@ LANGCHAIN_TRACING_V2=false
 2. **New Output Format**: Extend the `TravelPlanner.plan_trip()` method
 3. **Enhanced Memory**: Modify the `ConversationBufferMemory` configuration
 4. **UI Improvements**: Modify `streamlit_app.py` for new interface features
+5. **API Key Providers**: Add support for additional AI services in the API key dialog
 
 ### Dependencies
 
@@ -322,6 +310,22 @@ LANGCHAIN_TRACING_V2=false
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 🆕 Recent Updates
+
+### Version 2.0 - Enhanced User Experience
+- ✅ **Built-in API Key Management**: No more manual `.env` file creation
+- ✅ **User-Friendly Setup**: Beautiful API key input dialog with validation
+- ✅ **Real-time Status Indicators**: See API key status in the sidebar
+- ✅ **One-Click Key Updates**: Change API keys anytime through the interface
+- ✅ **Model Updates**: Updated to use supported Groq models
+- ✅ **Zero-Config Setup**: Just run the app and enter your keys when prompted
+
+### What's New
+- 🔑 **API Key Dialog**: First-time users see a guided setup process
+- ⚙️ **Settings Sidebar**: Manage API keys and view their status
+- 🎨 **Enhanced UI**: Improved styling and user experience
+- 🚀 **Simplified Installation**: Reduced setup steps from 7 to 4
+
 ## 🙏 Acknowledgments
 
 - [LangChain](https://langchain.com/) for the amazing framework
@@ -333,7 +337,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you encounter any issues or have questions:
 
-1. Check the [Issues](https://github.com/your-username/travel-itinerary-planner/issues) page
+1. Check the [Issues](https://github.com/haniyya-h/travel-itinerary-planner/issues) page
 2. Create a new issue with detailed information
 3. Include your Python version, OS, and error messages
 
